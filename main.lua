@@ -1,78 +1,120 @@
+local player = {}
+local ball = {}
+local edges = {}
+local hand = {}
+local playerSpeed
+
 function love.load()
-    x = 100
-    y = 100
-    width = 100
-    height = 20
 
-    maxX = 650
-    maxY = 50
+    background = love.graphics.newImage("images/backgrounds/bg.png")
+    Pawn = love.graphics.newImage("images/pawn.png")
+    ballImage = love.graphics.newImage("images/ball.png")
 
-    minX = 50
-    minY = 450
+    local imageWidth = Pawn:getWidth()
+    local imageHeight = Pawn:getHeight()
 
-    ballX = 350
-    ballY = 300
-    ballW = 15
-    ballH = 15
+    player = { x = 309, y = 364,
+    width = imageWidth, height = imageHeight,
+    image = Pawn}
 
-    speed = 200
-    direction = "up"
+    edges = {right = 690, left = 10,
+            top = 10, bottom = 570}
 
-end
+    ball = { x = 350, y = 300,
+            vx = 200, vy = 200,
+            radius = 25, image = ballImage}
 
-function MoveBallUp(dt)
-    ballY = ballY + (speed * dt)
-    return ballY
-end
 
-function MoveBallDown(dt)
-    ballY = ballY - (speed * dt)
-    return ballY
+    hand = { top = 364, bottom = 454}
+
+    playerSpeed = 300
+
 end
 
 function love.update(dt)
-    if love.keyboard.isDown("right") then
-        if x < maxX then
-            x = x + 5
-        end
+
+    if love.keyboard.isDown("right") and player.x < edges.right then
+        player.x = player.x + playerSpeed * dt
     end
 
-    if love.keyboard.isDown("left") then
-        if x > minX then
-            x = x - 5
-        end
+    if love.keyboard.isDown("left") and player.x > edges.left then
+        player.x = player.x - playerSpeed * dt
+    end 
+
+    if love.keyboard.isDown("up") and player.y > hand.top then
+        player.y = player.y - playerSpeed * dt
     end
 
-    if love.keyboard.isDown("up") then
-        if y > maxY then 
-            y = y - 5
-        end
-    end
+    if love.keyboard.isDown("down") and player.y < hand.bottom then
+        player.y = player.y + playerSpeed * dt
+    end 
 
-    if love.keyboard.isDown("down") then
-        if y < minY then
-            y = y + 5
-        end
-    end
-
-    if direction == "up" then
-        ballY = MoveBallUp(dt)
-        if ballY >= minY then
-            direction = "down"
-        end
-    elseif direction == "down" then
-        ballY = MoveBallDown(dt)
-        if ballY <= maxY then
-            direction = "up"
-        end
-    end    
+    MoveBall(dt)
 
 end
 
-function love.draw()
-    love.graphics.rectangle("line", x, y, width, height)
-    love.graphics.print("X: " .. x .. " Y: " .. y)
+function MoveBall(dt)
 
-    love.graphics.circle("fill", ballX, ballY, ballW, ballH)
+    ball.x = ball.x + ball.vx * dt
+    ball.y = ball.y + ball.vy * dt
+
+    if ball.x + ball.radius > edges.right then
+        ball.x = edges.right - ball.radius
+        ball.vx = -ball.vx
+    elseif ball.x - ball.radius < edges.left then
+        ball.x = edges.left + ball.radius
+        ball.vx = -ball.vx
+    end
+
+    if ball.y + ball.radius > edges.bottom then
+        ball.y = edges.bottom - ball.radius
+        ball.vy = -ball.vy
+    elseif ball.y - ball.radius < edges.top then
+        ball.y = edges.top + ball.radius
+        ball.vy = -ball.vy
+    end
+
+
+    local ballBox = {
+        x = ball.x - ball.radius,
+        y = ball.y - ball.radius,
+        w = ball.radius * 2,
+        h = ball.radius * 2
+    }
+
+    if CheckCollision(player.x, player.y, player.width, player.height,
+                      ballBox.x, ballBox.y, ballBox.w, ballBox.h) then
+        ball.vy = -ball.vy
+    end
+end
+
+function CheckCollision(ax, ay, aw, ah, bx, by, bw, bh)
+    return ax < bx + bw and
+           ax + aw > bx and
+           ay < by + bh and
+           ay + ah > by
+end
+
+function love.draw()
+
+    local screenWidth = love.graphics.getWidth()
+    local screenHeight = love.graphics.getHeight()
+
+    bacgroundX = screenWidth / background:getWidth()
+    bacgroundY = screenHeight / background:getHeight()
+
+    love.graphics.draw(background, 0, 0, 0, bacgroundX, bacgroundY)
+
+    love.graphics.draw(player.image, player.x, player.y,
+    0, 0.4, 0.4)
+
+    local scaleX = (ball.radius * 2) / ball.image:getWidth()
+    local scaleY = (ball.radius * 2) / ball.image:getHeight()  
+
+    love.graphics.draw(ball.image, ball.x - ball.radius, ball.y - ball.radius,
+    0, scaleX, scaleY)
+
+    love.graphics.print("X: " .. player.x .. " Y: " .. player.y)
+
 end
 
