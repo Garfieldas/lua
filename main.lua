@@ -5,10 +5,15 @@ local hand = {}
 local playerSpeed
 
 function love.load()
+    love.window.setTitle("Mew")
 
     background = love.graphics.newImage("images/backgrounds/bg.png")
     Pawn = love.graphics.newImage("images/pawn.png")
     ballImage = love.graphics.newImage("images/ball.png")
+
+    song = love.audio.newSource("music/theme.mp3", "stream")
+    song:setLooping(true)
+    song:play()
 
     local imageWidth = Pawn:getWidth()
     local imageHeight = Pawn:getHeight()
