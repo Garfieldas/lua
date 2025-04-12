@@ -12,8 +12,11 @@ function love.load()
     ballImage = love.graphics.newImage("images/ball.png")
 
     song = love.audio.newSource("music/theme.mp3", "stream")
+    song:setVolume(0.5)
     song:setLooping(true)
     song:play()
+
+    sfx = love.audio.newSource("music/effect.mp3", "static")
 
     local imageWidth = Pawn:getWidth()
     local imageHeight = Pawn:getHeight()
@@ -34,6 +37,11 @@ function love.load()
 
     playerSpeed = 300
 
+end
+
+function playSfx()
+    sfx:setVolume(1)
+    sfx:play()
 end
 
 function love.update(dt)
@@ -66,17 +74,21 @@ function MoveBall(dt)
     if ball.x + ball.radius > edges.right then
         ball.x = edges.right - ball.radius
         ball.vx = -ball.vx
+        playSfx()
     elseif ball.x - ball.radius < edges.left then
         ball.x = edges.left + ball.radius
         ball.vx = -ball.vx
+        playSfx()
     end
 
     if ball.y + ball.radius > edges.bottom then
         ball.y = edges.bottom - ball.radius
         ball.vy = -ball.vy
+        playSfx()
     elseif ball.y - ball.radius < edges.top then
         ball.y = edges.top + ball.radius
         ball.vy = -ball.vy
+        playSfx()
     end
 
 
@@ -89,7 +101,11 @@ function MoveBall(dt)
 
     if CheckCollision(player.x, player.y, player.width, player.height,
                       ballBox.x, ballBox.y, ballBox.w, ballBox.h) then
+
         ball.vy = -ball.vy
+        ball.y = player.y - ball.radius
+        ball.vy = ball.vy * 1.05
+        playSfx()
     end
 end
 
@@ -105,10 +121,10 @@ function love.draw()
     local screenWidth = love.graphics.getWidth()
     local screenHeight = love.graphics.getHeight()
 
-    bacgroundX = screenWidth / background:getWidth()
-    bacgroundY = screenHeight / background:getHeight()
+    backgroundX = screenWidth / background:getWidth()
+    backgroundY = screenHeight / background:getHeight()
 
-    love.graphics.draw(background, 0, 0, 0, bacgroundX, bacgroundY)
+    love.graphics.draw(background, 0, 0, 0, backgroundX, backgroundY)
 
     love.graphics.draw(player.image, player.x, player.y,
     0, 0.4, 0.4)
